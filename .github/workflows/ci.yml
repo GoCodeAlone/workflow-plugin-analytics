@@ -4,14 +4,16 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+permissions:
+  contents: read
+env:
+  GOPRIVATE: github.com/GoCodeAlone/*
 jobs:
   test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
       - run: go build ./...
@@ -20,12 +22,31 @@ jobs:
 
   wfctl-strict-contracts:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v4
+      - name: Fail fast if contract files are missing
+        run: |
+          for file in plugin.json plugin.contracts.json; do
+            test -f "$file" || (echo "::error::$file not found" && exit 1)
+          done
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: Derive wfctl version from go.mod
+        id: wfctl-ver
+        run: |
+          ver=$(go list -m -f '{{.Version}}' github.com/GoCodeAlone/workflow)
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+      - uses: GoCodeAlone/setup-wfctl@bcd880980f5bbe8d192d0c20ff6279d25331f956
+        with:
+          version: ${{ steps.wfctl-ver.outputs.version }}
       - name: Validate strict plugin contracts
-        run: go run github.com/GoCodeAlone/workflow/cmd/wfctl@v0.57.4 plugin validate --file plugin.json --strict-contracts
+        run: |
+          wfctl plugin validate --file plugin.json --strict-contracts
+          tmp_dir=$(mktemp -d)
+          cp plugin.json "$tmp_dir/"
+          cp plugin.contracts.json "$tmp_dir/"
+          sed -i.bak 's/"version": ".*"/"version": "0.0.0-ci-rewrite-test"/' "$tmp_dir/plugin.json" && rm -f "$tmp_dir/plugin.json.bak"
+          sed -i.bak 's|/releases/download/v[^/]*/|/releases/download/v0.0.0-ci-rewrite-test/|g' "$tmp_dir/plugin.json" && rm -f "$tmp_dir/plugin.json.bak"
+          wfctl plugin validate --file "$tmp_dir/plugin.json" --strict-contracts
+          rm -rf "$tmp_dir"
