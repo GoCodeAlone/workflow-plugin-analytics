@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "contracts": [
+    {
+      "kind": "step",
+      "type": "step.analytics_inject_html",
+      "mode": "strict",
+      "input": "workflow.plugins.analytics.AnalyticsInjectHTMLInput",
+      "output": "workflow.plugins.analytics.AnalyticsInjectHTMLOutput"
+    }
+  ]
+}
