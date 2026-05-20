@@ -56,6 +56,7 @@ func (c *CLIProvider) runInject(args []string) int {
 	htmlPath := fs.String("html", "", "HTML file to mutate")
 	dir := fs.String("dir", "", "Directory to recursively process for .html files")
 	dryRun := fs.Bool("dry-run", false, "Report changes without writing files")
+	anonymizeIP := fs.Bool("anonymize-ip", false, "Emit anonymize_ip:true in the GA4 config (privacy mode)")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -65,11 +66,12 @@ func (c *CLIProvider) runInject(args []string) int {
 		id = os.Getenv(*tagIDEnv)
 	}
 	summary, err := Inject(InjectOptions{
-		Provider: *provider,
-		TagID:    id,
-		HTMLPath: *htmlPath,
-		Dir:      *dir,
-		DryRun:   *dryRun,
+		Provider:    *provider,
+		TagID:       id,
+		HTMLPath:    *htmlPath,
+		Dir:         *dir,
+		DryRun:      *dryRun,
+		AnonymizeIP: *anonymizeIP,
 	})
 	if err != nil {
 		fmt.Fprintf(c.stderr, "analytics inject: %v\n", err)

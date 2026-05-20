@@ -66,3 +66,53 @@ func TestAnalyticsInjectHTMLStepEmptyEnvNoops(t *testing.T) {
 		t.Fatalf("unexpected flags: %#v", result.Output)
 	}
 }
+
+func TestAnalyticsInjectHTMLStepAnonymizeIP(t *testing.T) {
+	step, err := newAnalyticsInjectHTMLStep("inj", map[string]any{
+		"tag_id":       "G-TENANTA",
+		"anonymize_ip": true,
+	})
+	if err != nil {
+		t.Fatalf("new step: %v", err)
+	}
+	res, err := step.Execute(
+		context.Background(), nil, nil,
+		map[string]any{"html": "<html><head></head><body></body></html>"},
+		nil, nil,
+	)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	out, _ := res.Output["html"].(string)
+	if !strings.Contains(out, "'anonymize_ip': true") {
+		t.Errorf("step did not honour anonymize_ip flag; got %q", out)
+	}
+	if !strings.Contains(out, "G-TENANTA") {
+		t.Errorf("step missing tenant tag_id; got %q", out)
+	}
+}
+
+func TestAnalyticsInjectHTMLStepPerCallTagID(t *testing.T) {
+	// Multi-tenant invocation: tag_id passed at execute time (e.g. from
+	// tenant-resolved context) rather than configured at module build.
+	step, err := newAnalyticsInjectHTMLStep("inj", map[string]any{})
+	if err != nil {
+		t.Fatalf("new step: %v", err)
+	}
+	res, err := step.Execute(
+		context.Background(), nil, nil,
+		map[string]any{"html": "<html><head></head><body></body></html>"},
+		nil,
+		map[string]any{"tag_id": "G-TENANTB", "anonymize_ip": true},
+	)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	out, _ := res.Output["html"].(string)
+	if !strings.Contains(out, "G-TENANTB") {
+		t.Errorf("per-call tag_id not honoured; got %q", out)
+	}
+	if !strings.Contains(out, "'anonymize_ip': true") {
+		t.Errorf("per-call anonymize_ip not honoured; got %q", out)
+	}
+}

@@ -32,6 +32,27 @@ Apps that render HTML directly from Workflow handlers can run the same injector 
 
 The step reads HTML from `config.html` or `current[html_field]`, writes the mutated document to output key `html`, and returns `injected`, `skipped`, `reason`, and `provider` metadata.
 
+## Per-tenant (multi-app) usage
+
+The step accepts `tag_id` and `anonymize_ip` at execute time as well as at
+build time. A multi-tenant host (e.g. `gocodealone-multisite`) resolves the
+tenant first, then passes per-tenant values via the step's runtime config:
+
+```yaml
+- name: inject_analytics
+  type: step.analytics_inject_html
+  config:
+    provider: google-analytics
+    # tag_id + anonymize_ip omitted here — resolved per request from
+    # the tenant's multisite.yaml and merged into config at dispatch.
+    html_field: html
+```
+
+If the tenant has no `analytics.google.measurement_id`, the step short-
+circuits to `skipped: true, reason: "empty tag id"`. When the tenant sets
+`anonymize_ip: true`, the GA4 `config(...)` call emits `{'anonymize_ip':
+true}`.
+
 ## Providers
 
 - `google-analytics`: injects the Google tag into `<head>`.
