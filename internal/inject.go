@@ -21,11 +21,12 @@ var safeTagIDPattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 // InjectOptions controls HTML tag injection.
 type InjectOptions struct {
-	Provider string
-	TagID    string
-	HTMLPath string
-	Dir      string
-	DryRun   bool
+	Provider    string
+	TagID       string
+	HTMLPath    string
+	Dir         string
+	DryRun      bool
+	AnonymizeIP bool
 }
 
 // InjectSummary reports what an injection run did.
@@ -67,7 +68,7 @@ func Inject(opts InjectOptions) (InjectSummary, error) {
 		summary.Reason = "empty tag id"
 	}
 	for _, path := range paths {
-		changed, err := injectFile(path, provider, tagID, opts.DryRun)
+		changed, err := injectFile(path, provider, tagID, opts.DryRun, opts.AnonymizeIP)
 		if err != nil {
 			return summary, err
 		}
@@ -116,13 +117,13 @@ func htmlPaths(htmlPath, dir string) ([]string, error) {
 	return paths, nil
 }
 
-func injectFile(path, provider, tagID string, dryRun bool) (bool, error) {
+func injectFile(path, provider, tagID string, dryRun, anonymizeIP bool) (bool, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return false, fmt.Errorf("read %s: %w", path, err)
 	}
 	original := string(data)
-	next, err := injectHTML(original, provider, tagID)
+	next, err := injectHTML(original, provider, tagID, anonymizeIP)
 	if err != nil {
 		return false, fmt.Errorf("%s: %w", path, err)
 	}
@@ -138,7 +139,7 @@ func injectFile(path, provider, tagID string, dryRun bool) (bool, error) {
 	return true, nil
 }
 
-func injectHTML(input, provider, tagID string) (string, error) {
+func injectHTML(input, provider, tagID string, anonymizeIP bool) (string, error) {
 	htmlDoc := removeManagedBlocks(input, provider)
 	if tagID == "" {
 		return htmlDoc, nil
@@ -148,7 +149,7 @@ func injectHTML(input, provider, tagID string) (string, error) {
 	}
 	switch provider {
 	case ProviderGoogleAnalytics:
-		return injectBeforeClosingTag(htmlDoc, "</head>", googleAnalyticsBlock(tagID))
+		return injectBeforeClosingTag(htmlDoc, "</head>", googleAnalyticsBlock(tagID, anonymizeIP))
 	case ProviderGoogleTagManager:
 		withHead, err := injectBeforeClosingTag(htmlDoc, "</head>", googleTagManagerHeadBlock(tagID))
 		if err != nil {
@@ -230,19 +231,23 @@ func blockEnd(provider, slot string) string {
 	return fmt.Sprintf("<!-- workflow-plugin-analytics:%s:%s:end -->", provider, slot)
 }
 
-func googleAnalyticsBlock(tagID string) string {
+func googleAnalyticsBlock(tagID string, anonymizeIP bool) string {
 	idJS := escapeJSString(tagID)
 	idURL := url.QueryEscape(tagID)
+	configCall := fmt.Sprintf("gtag('config', '%s');", idJS)
+	if anonymizeIP {
+		configCall = fmt.Sprintf("gtag('config', '%s', {'anonymize_ip': true});", idJS)
+	}
 	return fmt.Sprintf(`%s
 <script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', '%s');
+  %s
 </script>
 %s
-`, blockStart(ProviderGoogleAnalytics, "head"), idURL, idJS, blockEnd(ProviderGoogleAnalytics, "head"))
+`, blockStart(ProviderGoogleAnalytics, "head"), idURL, configCall, blockEnd(ProviderGoogleAnalytics, "head"))
 }
 
 func googleTagManagerHeadBlock(tagID string) string {

@@ -10,11 +10,12 @@ import (
 )
 
 type analyticsInjectHTMLStep struct {
-	name     string
-	provider string
-	tagID    string
-	tagIDEnv string
-	htmlKey  string
+	name        string
+	provider    string
+	tagID       string
+	tagIDEnv    string
+	htmlKey     string
+	anonymizeIP bool
 }
 
 func newAnalyticsInjectHTMLStep(name string, config map[string]any) (*analyticsInjectHTMLStep, error) {
@@ -37,6 +38,9 @@ func newAnalyticsInjectHTMLStep(name string, config map[string]any) (*analyticsI
 	}
 	if v, ok := stringConfig(config, "html_field"); ok {
 		step.htmlKey = v
+	}
+	if v, ok := config["anonymize_ip"].(bool); ok {
+		step.anonymizeIP = v
 	}
 	return step, nil
 }
@@ -68,6 +72,10 @@ func (s *analyticsInjectHTMLStep) Execute(
 	if strings.TrimSpace(tagID) == "" && tagIDEnv != "" {
 		tagID = os.Getenv(tagIDEnv)
 	}
+	anonymizeIP := s.anonymizeIP
+	if v, ok := config["anonymize_ip"].(bool); ok {
+		anonymizeIP = v
+	}
 
 	rawHTML, ok := stringConfig(config, "html")
 	if !ok && current != nil {
@@ -77,7 +85,7 @@ func (s *analyticsInjectHTMLStep) Execute(
 		return nil, fmt.Errorf("%s %q: html is required in config.html or current[%q]", StepTypeAnalyticsInjectHTML, s.name, htmlKey)
 	}
 
-	next, err := injectHTML(rawHTML, provider, strings.TrimSpace(tagID))
+	next, err := injectHTML(rawHTML, provider, strings.TrimSpace(tagID), anonymizeIP)
 	if err != nil {
 		return nil, fmt.Errorf("%s %q: %w", StepTypeAnalyticsInjectHTML, s.name, err)
 	}

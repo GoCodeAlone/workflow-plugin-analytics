@@ -19,7 +19,7 @@ const sampleHTML = `<!doctype html>
 `
 
 func TestInjectHTML_GoogleAnalytics(t *testing.T) {
-	got, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-ABC123")
+	got, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-ABC123", false)
 	if err != nil {
 		t.Fatalf("injectHTML: %v", err)
 	}
@@ -31,11 +31,11 @@ func TestInjectHTML_GoogleAnalytics(t *testing.T) {
 }
 
 func TestInjectHTML_GoogleAnalyticsIdempotent(t *testing.T) {
-	first, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-FIRST")
+	first, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-FIRST", false)
 	if err != nil {
 		t.Fatalf("first inject: %v", err)
 	}
-	second, err := injectHTML(first, ProviderGoogleAnalytics, "G-SECOND")
+	second, err := injectHTML(first, ProviderGoogleAnalytics, "G-SECOND", false)
 	if err != nil {
 		t.Fatalf("second inject: %v", err)
 	}
@@ -53,7 +53,7 @@ func TestInjectHTML_GoogleAnalyticsSkipsUnmanagedSameTag(t *testing.T) {
 <script>gtag('config', 'G-EXISTING');</script>
 </head>`, 1)
 
-	got, err := injectHTML(existing, ProviderGoogleAnalytics, "G-EXISTING")
+	got, err := injectHTML(existing, ProviderGoogleAnalytics, "G-EXISTING", false)
 	if err != nil {
 		t.Fatalf("injectHTML: %v", err)
 	}
@@ -66,11 +66,11 @@ func TestInjectHTML_GoogleAnalyticsSkipsUnmanagedSameTag(t *testing.T) {
 }
 
 func TestInjectHTML_EmptyTagIDRemovesManagedBlock(t *testing.T) {
-	withTag, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-ABC123")
+	withTag, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-ABC123", false)
 	if err != nil {
 		t.Fatalf("inject: %v", err)
 	}
-	withoutTag, err := injectHTML(withTag, ProviderGoogleAnalytics, "")
+	withoutTag, err := injectHTML(withTag, ProviderGoogleAnalytics, "", false)
 	if err != nil {
 		t.Fatalf("remove: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestInjectHTML_EmptyTagIDRemovesManagedBlock(t *testing.T) {
 }
 
 func TestInjectHTML_GoogleTagManager(t *testing.T) {
-	got, err := injectHTML(sampleHTML, ProviderGoogleTagManager, "GTM-ABC123")
+	got, err := injectHTML(sampleHTML, ProviderGoogleTagManager, "GTM-ABC123", false)
 	if err != nil {
 		t.Fatalf("injectHTML: %v", err)
 	}
@@ -97,7 +97,7 @@ func TestInjectHTML_GoogleTagManagerSkipsUnmanagedSameTag(t *testing.T) {
 	existing := strings.Replace(sampleHTML, "</head>", `<script src="https://www.googletagmanager.com/gtm.js?id=GTM-EXISTING"></script>
 </head>`, 1)
 
-	got, err := injectHTML(existing, ProviderGoogleTagManager, "GTM-EXISTING")
+	got, err := injectHTML(existing, ProviderGoogleTagManager, "GTM-EXISTING", false)
 	if err != nil {
 		t.Fatalf("injectHTML: %v", err)
 	}
@@ -154,5 +154,25 @@ func assertContains(t *testing.T, got, want string) {
 	t.Helper()
 	if !strings.Contains(got, want) {
 		t.Fatalf("missing %q in:\n%s", want, got)
+	}
+}
+
+func TestInjectHTMLAnonymizeIPInjected(t *testing.T) {
+	got, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-ANON123", true)
+	if err != nil {
+		t.Fatalf("injectHTML: %v", err)
+	}
+	if !strings.Contains(got, "'anonymize_ip': true") {
+		t.Errorf("expected anonymize_ip flag in snippet; got %q", got)
+	}
+}
+
+func TestInjectHTMLAnonymizeIPDefaultOff(t *testing.T) {
+	got, err := injectHTML(sampleHTML, ProviderGoogleAnalytics, "G-PLAIN123", false)
+	if err != nil {
+		t.Fatalf("injectHTML: %v", err)
+	}
+	if strings.Contains(got, "anonymize_ip") {
+		t.Errorf("anonymize_ip must NOT appear when flag is false; got %q", got)
 	}
 }
