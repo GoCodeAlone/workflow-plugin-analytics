@@ -1,6 +1,6 @@
 # Workflow Analytics Plugin
 
-> ⚠️ **Experimental** — This plugin compiles and passes its unit tests but has not been validated in any active GoCodeAlone-internal production deployment. Use with caution. Please [open an issue](https://github.com/GoCodeAlone/workflow-plugin-analytics/issues/new) if you adopt it so we can promote it to **verified** status.
+> ✅ **Verified** — used in production at **buymywishlist**. This plugin has been validated end-to-end in a merged main-branch wfctl.yaml of an active GoCodeAlone project.
 
 `workflow-plugin-analytics` injects analytics and tag-manager snippets into rendered HTML assets from `wfctl`.
 
