@@ -10,5 +10,5 @@ import (
 
 func main() {
 	plugin := internal.NewPlugin()
-	sdk.ServePluginFull(plugin, internal.NewCLIProvider(), nil)
+	sdk.ServePluginFull(plugin, internal.NewCLIProvider(), nil, sdk.WithBuildVersion(sdk.ResolveBuildVersion(internal.Version)))
 }
