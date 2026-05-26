@@ -31,7 +31,7 @@
 
 **Status:** Draft
 
-## Task 1: Google Provider Module and Credentials
+### Task 1: Google Provider Module and Credentials
 
 **Files:**
 - Modify: `internal/plugin.go`
@@ -48,7 +48,7 @@
 4. Run the focused tests; expected: PASS.
 5. Rollback: revert this task commit to remove the module surface and plugin manifest entry.
 
-## Task 2: GA4 Web Stream Reconciler
+### Task 2: GA4 Web Stream Reconciler
 
 **Files:**
 - Create: `internal/google_ga4.go`
@@ -62,7 +62,7 @@
 5. Run the focused tests; expected: PASS.
 6. Rollback: revert this task commit; no live resources are touched by tests.
 
-## Task 3: GTM Web Container Reconciler
+### Task 3: GTM Web Container Reconciler
 
 **Files:**
 - Create: `internal/google_gtm.go`
@@ -76,7 +76,7 @@
 5. Run the focused tests; expected: PASS.
 6. Rollback: revert this task commit; no live resources are touched by tests.
 
-## Task 4: CLI JSON Surfaces
+### Task 4: CLI JSON Surfaces
 
 **Files:**
 - Modify: `internal/cli.go`
@@ -91,7 +91,7 @@
 4. Run the focused tests; expected: PASS.
 5. Rollback: revert this task commit; existing `analytics inject` behavior remains in prior commits.
 
-## Task 5: Workflow Ensure Steps
+### Task 5: Workflow Ensure Steps
 
 **Files:**
 - Create: `internal/google_steps.go`
@@ -107,7 +107,7 @@
 4. Run the focused tests; expected: PASS.
 5. Rollback: revert this task commit to remove provisioning step types.
 
-## Task 6: Consumer Deployment Guidance and Verification
+### Task 6: Consumer Deployment Guidance and Verification
 
 **Files:**
 - Modify: `README.md`
