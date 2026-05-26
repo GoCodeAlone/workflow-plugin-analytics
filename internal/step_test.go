@@ -140,6 +140,26 @@ func TestAnalyticsGoogleGA4EnsureStepDryRun(t *testing.T) {
 	}
 }
 
+func TestAnalyticsGoogleGA4EnsureStepAcceptsExplicitProperty(t *testing.T) {
+	step, err := newAnalyticsGoogleGA4EnsureStep("ga4", map[string]any{
+		"account":     "accounts/395146029",
+		"property":    "properties/538139248",
+		"stream_name": "gocodealone.tech",
+		"default_uri": "https://gocodealone.tech",
+		"dry_run":     true,
+	})
+	if err != nil {
+		t.Fatalf("new step: %v", err)
+	}
+	res, err := step.Execute(context.Background(), nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if res.Output["property"] != "properties/538139248" {
+		t.Fatalf("property output = %#v", res.Output)
+	}
+}
+
 func TestAnalyticsGoogleGTMEnsureStepDryRun(t *testing.T) {
 	step, err := newAnalyticsGoogleGTMEnsureStep("gtm", map[string]any{
 		"account":        "accounts/456",

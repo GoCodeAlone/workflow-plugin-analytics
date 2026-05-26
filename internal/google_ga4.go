@@ -13,6 +13,7 @@ import (
 
 type GA4EnsureRequest struct {
 	Account      string `json:"account"`
+	Property     string `json:"property,omitempty"`
 	PropertyName string `json:"property_name"`
 	StreamName   string `json:"stream_name"`
 	DefaultURI   string `json:"default_uri"`
@@ -63,17 +64,23 @@ type GA4AdminClient interface {
 }
 
 func EnsureGA4WebStream(ctx context.Context, client GA4AdminClient, req GA4EnsureRequest) (GA4EnsureResult, error) {
+	req.Property = strings.TrimSpace(req.Property)
 	req.PropertyName = strings.TrimSpace(req.PropertyName)
 	req.StreamName = strings.TrimSpace(req.StreamName)
 	req.DefaultURI = strings.TrimSpace(req.DefaultURI)
 	if err := validateGoogleAccount(req.Account); err != nil {
 		return GA4EnsureResult{}, err
 	}
-	if req.PropertyName == "" {
+	if req.Property != "" {
+		if err := validateGoogleProperty(req.Property); err != nil {
+			return GA4EnsureResult{}, err
+		}
+	}
+	if req.PropertyName == "" && req.Property == "" {
 		return GA4EnsureResult{}, fmt.Errorf("property_name is required")
 	}
 	if req.StreamName == "" {
-		req.StreamName = req.PropertyName
+		req.StreamName = defaultString(req.PropertyName, req.Property)
 	}
 	if err := validateWebURI(req.DefaultURI); err != nil {
 		return GA4EnsureResult{}, err
@@ -81,7 +88,10 @@ func EnsureGA4WebStream(ctx context.Context, client GA4AdminClient, req GA4Ensur
 	result := GA4EnsureResult{Account: req.Account, DryRun: req.DryRun}
 
 	var property GA4Property
-	if !req.DryRun {
+	if req.Property != "" {
+		property = GA4Property{Name: req.Property, DisplayName: req.PropertyName}
+		result.Operations = append(result.Operations, reused("reuse_property"))
+	} else if !req.DryRun {
 		if client == nil {
 			return GA4EnsureResult{}, fmt.Errorf("google credentials are required for live GA4 ensure")
 		}
@@ -116,6 +126,13 @@ func EnsureGA4WebStream(ctx context.Context, client GA4AdminClient, req GA4Ensur
 		property = created
 	}
 	result.Property = property.Name
+	if req.DryRun {
+		result.Operations = append(result.Operations, planned("create_web_data_stream", true))
+		return result, nil
+	}
+	if client == nil {
+		return GA4EnsureResult{}, fmt.Errorf("google credentials are required for live GA4 ensure")
+	}
 
 	var stream GA4DataStream
 	streams, err := client.ListDataStreams(ctx, property.Name)

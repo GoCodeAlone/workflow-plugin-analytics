@@ -72,6 +72,7 @@ func (c *CLIProvider) runGoogleGA4Ensure(args []string) int {
 	fs := flag.NewFlagSet("analytics google ga4 ensure", flag.ContinueOnError)
 	fs.SetOutput(c.stderr)
 	account := fs.String("account", "", "Google Analytics account resource, accounts/<id>")
+	property := fs.String("property", "", "Existing GA4 property resource, properties/<id>")
 	propertyName := fs.String("property-name", "", "GA4 property display name")
 	streamName := fs.String("stream-name", "", "GA4 web stream display name")
 	defaultURI := fs.String("default-uri", "", "GA4 web stream default URI")
@@ -98,6 +99,7 @@ func (c *CLIProvider) runGoogleGA4Ensure(args []string) int {
 	}
 	result, err := EnsureGA4WebStream(context.Background(), client, GA4EnsureRequest{
 		Account:      *account,
+		Property:     *property,
 		PropertyName: *propertyName,
 		StreamName:   *streamName,
 		DefaultURI:   *defaultURI,
@@ -226,5 +228,6 @@ Subcommands:
 func (c *CLIProvider) googleUsage() {
 	fmt.Fprintln(c.stderr, `Usage:
   wfctl analytics google ga4 ensure --account accounts/123 --property-name example.com --stream-name example.com --default-uri https://example.com --dry-run
+  wfctl analytics google ga4 ensure --account accounts/123 --property properties/456 --stream-name example.com --default-uri https://example.com --dry-run
   wfctl analytics google gtm ensure --account accounts/456 --container-name example.com --domain example.com --dry-run`)
 }

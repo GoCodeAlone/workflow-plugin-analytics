@@ -97,6 +97,32 @@ func TestCLIAnalyticsGoogleGA4EnsureDryRun(t *testing.T) {
 	}
 }
 
+func TestCLIAnalyticsGoogleGA4EnsureAcceptsExplicitProperty(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	var stdout, stderr bytes.Buffer
+	code := newCLIProvider(&stdout, &stderr).RunCLI([]string{
+		"analytics", "google", "ga4", "ensure",
+		"--account", "accounts/395146029",
+		"--property", "properties/538139248",
+		"--stream-name", "gocodealone.tech",
+		"--default-uri", "https://gocodealone.tech",
+		"--dry-run",
+	})
+	if code != 0 {
+		t.Fatalf("code=%d stderr=%s", code, stderr.String())
+	}
+	var result GA4EnsureResult
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("json output: %v\n%s", err, stdout.String())
+	}
+	if result.Property != "properties/538139248" {
+		t.Fatalf("property = %q", result.Property)
+	}
+	if got := operationNames(result.Operations); !sameStrings(got, []string{"reuse_property", "create_web_data_stream"}) {
+		t.Fatalf("operations = %v", got)
+	}
+}
+
 func TestCLIAnalyticsGoogleGTMEnsureDryRun(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	var stdout, stderr bytes.Buffer

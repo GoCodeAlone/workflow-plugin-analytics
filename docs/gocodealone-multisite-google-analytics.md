@@ -59,7 +59,9 @@ pipelines:
         type: step.analytics_google_ga4_ensure
         config:
           provider: google-analytics
-          property_name: gocodealone.tech
+          # Existing GA4 property created manually for GoCodeAlone.
+          property: properties/538139248
+          property_name: GoCodeAlone
           stream_name: gocodealone.tech
           default_uri: https://gocodealone.tech
           dry_run: true
@@ -87,8 +89,9 @@ Run the equivalent GA4 dry-run directly when validating credentials or debugging
 
 ```sh
 wfctl analytics google ga4 ensure \
-  --account accounts/123456789 \
-  --property-name gocodealone.tech \
+  --account accounts/395146029 \
+  --property properties/538139248 \
+  --property-name GoCodeAlone \
   --stream-name gocodealone.tech \
   --default-uri https://gocodealone.tech \
   --credentials-json-env GOOGLE_ANALYTICS_ADMIN_CREDENTIALS_JSON \

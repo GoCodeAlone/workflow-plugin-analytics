@@ -41,6 +41,13 @@ func validateGoogleAccount(account string) error {
 	return nil
 }
 
+func validateGoogleProperty(property string) error {
+	if !strings.HasPrefix(property, "properties/") || strings.TrimPrefix(property, "properties/") == "" {
+		return fmt.Errorf("property must use properties/<id> format")
+	}
+	return nil
+}
+
 func validateWebURI(raw string) error {
 	u, err := url.Parse(strings.TrimSpace(raw))
 	if err != nil || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") {
