@@ -1,7 +1,7 @@
 {
   "name": "workflow-plugin-analytics",
   "version": "0.1.2",
-  "description": "Analytics and tag-manager injection for rendered HTML assets",
+  "description": "Analytics and tag-manager injection plus Google provisioning for Workflow apps",
   "author": "GoCodeAlone",
   "license": "MIT",
   "type": "external",
@@ -18,9 +18,13 @@
   "homepage": "https://github.com/GoCodeAlone/workflow-plugin-analytics",
   "repository": "https://github.com/GoCodeAlone/workflow-plugin-analytics",
   "capabilities": {
-    "moduleTypes": [],
+    "moduleTypes": [
+      "analytics.google_provider"
+    ],
     "stepTypes": [
-      "step.analytics_inject_html"
+      "step.analytics_inject_html",
+      "step.analytics_google_ga4_ensure",
+      "step.analytics_google_gtm_ensure"
     ],
     "triggerTypes": [],
     "cliCommands": [
@@ -32,6 +36,10 @@
           {
             "name": "inject",
             "description": "Inject provider snippet into HTML files"
+          },
+          {
+            "name": "google",
+            "description": "Ensure Google Analytics and Google Tag Manager resources"
           }
         ]
       }
