@@ -17,6 +17,7 @@ type GoogleProviderConfig struct {
 	AnalyticsAccount   string
 	TagManagerAccount  string
 	AuditPath          string
+	AllowADC           bool
 }
 
 type googleProvider struct {
@@ -42,6 +43,7 @@ func newGoogleProviderModule(name string, config map[string]any) (*googleProvide
 		AnalyticsAccount:   stringValue(config, "analytics_account"),
 		TagManagerAccount:  stringValue(config, "tag_manager_account"),
 		AuditPath:          stringValue(config, "audit_path"),
+		AllowADC:           boolConfig(config, "allow_adc", false),
 	}
 	if cfg.AuditPath == "" {
 		cfg.AuditPath = defaultGoogleAuditPath()
@@ -101,6 +103,9 @@ func (p googleProvider) clientOptions() ([]option.ClientOption, bool, error) {
 			return nil, false, fmt.Errorf("google credentials file is not readable")
 		}
 		return []option.ClientOption{option.WithCredentialsFile(path)}, true, nil
+	}
+	if p.config.AllowADC {
+		return nil, true, nil
 	}
 	return nil, false, nil
 }

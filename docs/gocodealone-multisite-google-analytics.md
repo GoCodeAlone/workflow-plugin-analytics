@@ -46,6 +46,9 @@ modules:
     type: analytics.google_provider
     config:
       credentials_json: ${GOOGLE_ANALYTICS_ADMIN_CREDENTIALS_JSON}
+      # Keep false for GitHub-secret driven deploys; set true only when
+      # the runner's ADC identity is intentionally the deploy principal.
+      allow_adc: false
       analytics_account: accounts/123456789
       tag_manager_account: accounts/987654321
 

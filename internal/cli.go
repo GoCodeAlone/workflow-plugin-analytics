@@ -80,12 +80,14 @@ func (c *CLIProvider) runGoogleGA4Ensure(args []string) int {
 	dryRun := fs.Bool("dry-run", false, "Plan changes without calling Google APIs")
 	credentialsJSONEnv := fs.String("credentials-json-env", "", "Environment variable containing service-account JSON")
 	credentialsFileEnv := fs.String("credentials-file-env", "", "Environment variable containing service-account JSON file path")
+	allowADC := fs.Bool("allow-adc", false, "Use Application Default Credentials for live apply")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
 	provider := googleProvider{config: GoogleProviderConfig{
 		CredentialsJSONEnv: *credentialsJSONEnv,
 		CredentialsFileEnv: *credentialsFileEnv,
+		AllowADC:           *allowADC,
 	}}
 	client, audit, err := ga4ClientForProvider(context.Background(), provider, *dryRun)
 	if err != nil {
@@ -119,6 +121,7 @@ func (c *CLIProvider) runGoogleGTMEnsure(args []string) int {
 	dryRun := fs.Bool("dry-run", false, "Plan changes without calling Google APIs")
 	credentialsJSONEnv := fs.String("credentials-json-env", "", "Environment variable containing service-account JSON")
 	credentialsFileEnv := fs.String("credentials-file-env", "", "Environment variable containing service-account JSON file path")
+	allowADC := fs.Bool("allow-adc", false, "Use Application Default Credentials for live apply")
 	var domains repeatedFlag
 	fs.Var(&domains, "domain", "Domain associated with the web container; repeatable")
 	if err := fs.Parse(args); err != nil {
@@ -127,6 +130,7 @@ func (c *CLIProvider) runGoogleGTMEnsure(args []string) int {
 	provider := googleProvider{config: GoogleProviderConfig{
 		CredentialsJSONEnv: *credentialsJSONEnv,
 		CredentialsFileEnv: *credentialsFileEnv,
+		AllowADC:           *allowADC,
 	}}
 	client, audit, err := gtmClientForProvider(context.Background(), provider, *dryRun)
 	if err != nil {

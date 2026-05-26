@@ -64,9 +64,10 @@ modules:
       analytics_account: accounts/123456789
       tag_manager_account: accounts/987654321
       audit_path: ""
+      allow_adc: false
 ```
 
-The module registers a provider by name. Empty credentials use Google Application Default Credentials. Inline JSON and file paths are never logged. `analytics_account` and `tag_manager_account` can be overridden per step/CLI call to support umbrella accounts.
+The module registers a provider by name. Inline JSON and file paths are never logged. `allow_adc: true` explicitly opts into Google Application Default Credentials for environments where ADC is the intended deploy identity. `analytics_account` and `tag_manager_account` can be overridden per step/CLI call to support umbrella accounts.
 
 ### GA4 Reconcile
 

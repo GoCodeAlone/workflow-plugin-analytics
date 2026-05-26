@@ -62,6 +62,20 @@ func TestGoogleProviderCredentialOptionsFromEnv(t *testing.T) {
 	}
 }
 
+func TestGoogleProviderAllowsADCWhenExplicit(t *testing.T) {
+	provider := googleProvider{config: GoogleProviderConfig{AllowADC: true}}
+	opts, explicit, err := provider.clientOptions()
+	if err != nil {
+		t.Fatalf("clientOptions: %v", err)
+	}
+	if !explicit {
+		t.Fatal("allow_adc should authorize live SDK construction")
+	}
+	if len(opts) != 0 {
+		t.Fatalf("ADC should not add explicit options, got %d", len(opts))
+	}
+}
+
 func TestGoogleProviderCredentialErrorRedactsValue(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "missing.json")
 	provider := googleProvider{config: GoogleProviderConfig{CredentialsFile: path}}

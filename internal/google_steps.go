@@ -143,6 +143,7 @@ func providerFromConfig(config map[string]any) (googleProvider, bool) {
 		CredentialsFile:    stringValue(config, "credentials_file"),
 		CredentialsFileEnv: stringValue(config, "credentials_file_env"),
 		AuditPath:          stringValue(config, "audit_path"),
+		AllowADC:           boolConfig(config, "allow_adc", false),
 	}}, false
 }
 

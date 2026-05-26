@@ -76,6 +76,9 @@ modules:
     type: analytics.google_provider
     config:
       credentials_json: ${GOOGLE_ANALYTICS_ADMIN_CREDENTIALS_JSON}
+      # Set allow_adc: true only for runners where Application Default
+      # Credentials are the intended deploy identity.
+      allow_adc: false
       analytics_account: accounts/123456789
       tag_manager_account: accounts/987654321
 
