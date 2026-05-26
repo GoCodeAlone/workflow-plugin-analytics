@@ -119,6 +119,6 @@
 2. Add an example Workflow config showing provider module, GA4 ensure step, GTM ensure step, and existing HTML injection step consuming returned IDs.
 3. Run `GOWORK=off go test ./...`; expected: PASS.
 4. Run `GOWORK=off go build ./...`; expected: PASS.
-5. Run CLI smoke: `GOWORK=off go run ./cmd/workflow-plugin-analytics analytics google ga4 ensure --account accounts/123 --property-name example.com --stream-name example.com --default-uri https://example.com --dry-run`; expected JSON includes `"dry_run":true` and `"measurement_id":""`.
+5. Run CLI smoke: `GOWORK=off go run ./cmd/workflow-plugin-analytics --wfctl-cli analytics google ga4 ensure --account accounts/123 --property-name example.com --stream-name example.com --default-uri https://example.com --dry-run`; expected JSON includes `"dry_run":true` and `"measurement_id":""`.
 6. Confirm live apply is still blocked by running the same command without `--dry-run` and no credentials; expected non-zero exit and an error that names missing Google credentials without printing any credential value.
 7. Rollback: revert docs/example commit; no live resources touched.
