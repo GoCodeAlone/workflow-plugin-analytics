@@ -94,6 +94,17 @@ pipelines:
           default_uri: https://example.com
           dry_run: true
 
+      - name: ensure_existing_ga4
+        type: step.analytics_google_ga4_ensure
+        config:
+          provider: google-analytics
+          # Use property when a GA4 property already exists and only the
+          # web stream/measurement ID should be reconciled.
+          property: properties/538139248
+          stream_name: gocodealone.tech
+          default_uri: https://gocodealone.tech
+          dry_run: true
+
       - name: ensure_gtm
         type: step.analytics_google_gtm_ensure
         config:
@@ -112,6 +123,7 @@ The CLI is still useful for smoke checks and one-off operator probes. Dry-run GA
 ```sh
 wfctl analytics google ga4 ensure \
   --account accounts/123456789 \
+  --property properties/538139248 \
   --property-name example.com \
   --stream-name example.com \
   --default-uri https://example.com \

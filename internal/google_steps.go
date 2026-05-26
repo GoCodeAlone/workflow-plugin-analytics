@@ -29,6 +29,7 @@ func (s *analyticsGoogleGA4EnsureStep) Execute(ctx context.Context, _ map[string
 	merged := mergeConfig(s.config, config)
 	req := GA4EnsureRequest{
 		Account:      stringValue(merged, "account"),
+		Property:     stringValue(merged, "property"),
 		PropertyName: stringValue(merged, "property_name"),
 		StreamName:   stringValue(merged, "stream_name"),
 		DefaultURI:   stringValue(merged, "default_uri"),

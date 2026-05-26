@@ -48,6 +48,42 @@ func TestEnsureGA4ReusesExistingPropertyAndStream(t *testing.T) {
 	}
 }
 
+func TestEnsureGA4UsesExplicitPropertyWithoutListingOrCreatingProperty(t *testing.T) {
+	client := &fakeGA4AdminClient{
+		streams: map[string][]GA4DataStream{
+			"properties/538139248": {{Name: "properties/538139248/dataStreams/7", DisplayName: "gocodealone.tech", DefaultURI: "https://gocodealone.tech", MeasurementID: "G-VM9JNJRJW1"}},
+		},
+	}
+	result, err := EnsureGA4WebStream(context.Background(), client, GA4EnsureRequest{
+		Account:      "accounts/395146029",
+		Property:     "properties/538139248",
+		PropertyName: "GoCodeAlone",
+		StreamName:   "gocodealone.tech",
+		DefaultURI:   "https://gocodealone.tech",
+	})
+	if err != nil {
+		t.Fatalf("EnsureGA4WebStream: %v", err)
+	}
+	if result.Property != "properties/538139248" || result.DataStream != "properties/538139248/dataStreams/7" || result.MeasurementID != "G-VM9JNJRJW1" {
+		t.Fatalf("unexpected result: %#v", result)
+	}
+	if client.listPropertiesCalls != 0 || client.createdProperties != 0 {
+		t.Fatalf("listed properties=%d created properties=%d", client.listPropertiesCalls, client.createdProperties)
+	}
+}
+
+func TestEnsureGA4ExplicitPropertyRequiresClientForLiveEnsure(t *testing.T) {
+	_, err := EnsureGA4WebStream(context.Background(), nil, GA4EnsureRequest{
+		Account:    "accounts/395146029",
+		Property:   "properties/538139248",
+		StreamName: "gocodealone.tech",
+		DefaultURI: "https://gocodealone.tech",
+	})
+	if err == nil {
+		t.Fatal("expected credentials error")
+	}
+}
+
 func TestEnsureGA4CreatesMissingResources(t *testing.T) {
 	client := &fakeGA4AdminClient{}
 	result, err := EnsureGA4WebStream(context.Background(), client, GA4EnsureRequest{
@@ -81,13 +117,15 @@ func TestEnsureGA4RejectsInvalidInput(t *testing.T) {
 }
 
 type fakeGA4AdminClient struct {
-	properties        []GA4Property
-	streams           map[string][]GA4DataStream
-	createdProperties int
-	createdStreams    int
+	properties          []GA4Property
+	streams             map[string][]GA4DataStream
+	listPropertiesCalls int
+	createdProperties   int
+	createdStreams      int
 }
 
 func (f *fakeGA4AdminClient) ListProperties(_ context.Context, account string) ([]GA4Property, error) {
+	f.listPropertiesCalls++
 	return f.properties, nil
 }
 
