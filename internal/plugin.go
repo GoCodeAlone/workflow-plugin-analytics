@@ -19,6 +19,16 @@ type analyticsPlugin struct{}
 // Workflow pipeline, covering handlers that render HTML at runtime.
 const StepTypeAnalyticsInjectHTML = "step.analytics_inject_html"
 
+// ModuleTypeAnalyticsGoogleProvider registers Google credentials and default
+// account wiring for Analytics Admin and Tag Manager provisioning.
+const ModuleTypeAnalyticsGoogleProvider = "analytics.google_provider"
+
+// Google provisioning step types.
+const (
+	StepTypeAnalyticsGoogleGA4Ensure = "step.analytics_google_ga4_ensure"
+	StepTypeAnalyticsGoogleGTMEnsure = "step.analytics_google_gtm_ensure"
+)
+
 // NewPlugin returns a new plugin instance. main.go calls sdk.Serve(NewPlugin()).
 func NewPlugin() sdk.PluginProvider {
 	return &analyticsPlugin{}
@@ -37,7 +47,11 @@ func (p *analyticsPlugin) Manifest() sdk.PluginManifest {
 
 // StepTypes returns the runtime step types this plugin provides.
 func (p *analyticsPlugin) StepTypes() []string {
-	return []string{StepTypeAnalyticsInjectHTML}
+	return []string{
+		StepTypeAnalyticsInjectHTML,
+		StepTypeAnalyticsGoogleGA4Ensure,
+		StepTypeAnalyticsGoogleGTMEnsure,
+	}
 }
 
 // CreateStep creates an analytics step instance.
@@ -45,7 +59,26 @@ func (p *analyticsPlugin) CreateStep(typeName, name string, config map[string]an
 	switch typeName {
 	case StepTypeAnalyticsInjectHTML:
 		return newAnalyticsInjectHTMLStep(name, config)
+	case StepTypeAnalyticsGoogleGA4Ensure:
+		return newAnalyticsGoogleGA4EnsureStep(name, config)
+	case StepTypeAnalyticsGoogleGTMEnsure:
+		return newAnalyticsGoogleGTMEnsureStep(name, config)
 	default:
 		return nil, fmt.Errorf("analytics plugin: unknown step type %q", typeName)
+	}
+}
+
+// ModuleTypes returns provider module types surfaced by this plugin.
+func (p *analyticsPlugin) ModuleTypes() []string {
+	return []string{ModuleTypeAnalyticsGoogleProvider}
+}
+
+// CreateModule creates an analytics module instance.
+func (p *analyticsPlugin) CreateModule(typeName, name string, config map[string]any) (sdk.ModuleInstance, error) {
+	switch typeName {
+	case ModuleTypeAnalyticsGoogleProvider:
+		return newGoogleProviderModule(name, config)
+	default:
+		return nil, fmt.Errorf("analytics plugin: unknown module type %q", typeName)
 	}
 }

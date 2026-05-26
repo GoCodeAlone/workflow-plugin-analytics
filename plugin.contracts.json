@@ -7,6 +7,26 @@
       "mode": "strict",
       "input": "workflow.plugins.analytics.AnalyticsInjectHTMLInput",
       "output": "workflow.plugins.analytics.AnalyticsInjectHTMLOutput"
+    },
+    {
+      "kind": "module",
+      "type": "analytics.google_provider",
+      "mode": "strict",
+      "config": "workflow.plugins.analytics.GoogleProviderConfig"
+    },
+    {
+      "kind": "step",
+      "type": "step.analytics_google_ga4_ensure",
+      "mode": "strict",
+      "input": "workflow.plugins.analytics.GoogleGA4EnsureInput",
+      "output": "workflow.plugins.analytics.GoogleGA4EnsureOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.analytics_google_gtm_ensure",
+      "mode": "strict",
+      "input": "workflow.plugins.analytics.GoogleGTMEnsureInput",
+      "output": "workflow.plugins.analytics.GoogleGTMEnsureOutput"
     }
   ]
 }
