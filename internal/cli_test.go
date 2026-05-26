@@ -63,6 +63,8 @@ func TestCLIInjectEmptyEnvNoop(t *testing.T) {
 }
 
 func TestCLIAnalyticsGoogleGA4EnsureDryRun(t *testing.T) {
+	stateHome := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", stateHome)
 	var stdout, stderr bytes.Buffer
 	code := newCLIProvider(&stdout, &stderr).RunCLI([]string{
 		"analytics", "google", "ga4", "ensure",
@@ -85,9 +87,18 @@ func TestCLIAnalyticsGoogleGA4EnsureDryRun(t *testing.T) {
 	if got := operationNames(result.Operations); !sameStrings(got, []string{"create_property", "create_web_data_stream"}) {
 		t.Fatalf("operations = %v", got)
 	}
+	auditPath := filepath.Join(stateHome, "wfctl", "plugins", "analytics", "google-audit.jsonl")
+	data, err := os.ReadFile(auditPath)
+	if err != nil {
+		t.Fatalf("audit file: %v", err)
+	}
+	if !strings.Contains(string(data), `"action":"ga4.ensure"`) {
+		t.Fatalf("audit missing ga4 action: %s", string(data))
+	}
 }
 
 func TestCLIAnalyticsGoogleGTMEnsureDryRun(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	var stdout, stderr bytes.Buffer
 	code := newCLIProvider(&stdout, &stderr).RunCLI([]string{
 		"analytics", "google", "gtm", "ensure",

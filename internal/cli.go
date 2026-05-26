@@ -81,6 +81,7 @@ func (c *CLIProvider) runGoogleGA4Ensure(args []string) int {
 	credentialsJSONEnv := fs.String("credentials-json-env", "", "Environment variable containing service-account JSON")
 	credentialsFileEnv := fs.String("credentials-file-env", "", "Environment variable containing service-account JSON file path")
 	allowADC := fs.Bool("allow-adc", false, "Use Application Default Credentials for live apply")
+	auditPath := fs.String("audit-path", defaultGoogleAuditPath(), "JSONL audit log path")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -88,6 +89,7 @@ func (c *CLIProvider) runGoogleGA4Ensure(args []string) int {
 		CredentialsJSONEnv: *credentialsJSONEnv,
 		CredentialsFileEnv: *credentialsFileEnv,
 		AllowADC:           *allowADC,
+		AuditPath:          *auditPath,
 	}}
 	client, audit, err := ga4ClientForProvider(context.Background(), provider, *dryRun)
 	if err != nil {
@@ -122,6 +124,7 @@ func (c *CLIProvider) runGoogleGTMEnsure(args []string) int {
 	credentialsJSONEnv := fs.String("credentials-json-env", "", "Environment variable containing service-account JSON")
 	credentialsFileEnv := fs.String("credentials-file-env", "", "Environment variable containing service-account JSON file path")
 	allowADC := fs.Bool("allow-adc", false, "Use Application Default Credentials for live apply")
+	auditPath := fs.String("audit-path", defaultGoogleAuditPath(), "JSONL audit log path")
 	var domains repeatedFlag
 	fs.Var(&domains, "domain", "Domain associated with the web container; repeatable")
 	if err := fs.Parse(args); err != nil {
@@ -131,6 +134,7 @@ func (c *CLIProvider) runGoogleGTMEnsure(args []string) int {
 		CredentialsJSONEnv: *credentialsJSONEnv,
 		CredentialsFileEnv: *credentialsFileEnv,
 		AllowADC:           *allowADC,
+		AuditPath:          *auditPath,
 	}}
 	client, audit, err := gtmClientForProvider(context.Background(), provider, *dryRun)
 	if err != nil {
