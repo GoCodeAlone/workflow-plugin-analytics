@@ -14,7 +14,7 @@ func TestPluginExposesAnalyticsInjectStep(t *testing.T) {
 	if !ok {
 		t.Fatal("plugin does not expose step provider methods")
 	}
-	if got := stepProvider.StepTypes(); len(got) != 1 || got[0] != StepTypeAnalyticsInjectHTML {
+	if got := stepProvider.StepTypes(); !sameStrings(got, []string{StepTypeAnalyticsInjectHTML, StepTypeAnalyticsGoogleGA4Ensure, StepTypeAnalyticsGoogleGTMEnsure}) {
 		t.Fatalf("StepTypes() = %v", got)
 	}
 }
@@ -114,5 +114,52 @@ func TestAnalyticsInjectHTMLStepPerCallTagID(t *testing.T) {
 	}
 	if !strings.Contains(out, "'anonymize_ip': true") {
 		t.Errorf("per-call anonymize_ip not honoured; got %q", out)
+	}
+}
+
+func TestAnalyticsGoogleGA4EnsureStepDryRun(t *testing.T) {
+	step, err := newAnalyticsGoogleGA4EnsureStep("ga4", map[string]any{
+		"account":       "accounts/123",
+		"property_name": "example.com",
+		"stream_name":   "example.com",
+		"default_uri":   "https://example.com",
+		"dry_run":       true,
+	})
+	if err != nil {
+		t.Fatalf("new step: %v", err)
+	}
+	res, err := step.Execute(context.Background(), nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if res.Output["dry_run"] != true {
+		t.Fatalf("dry_run output = %#v", res.Output)
+	}
+	if res.Output["measurement_id"] != "" {
+		t.Fatalf("measurement_id = %#v", res.Output["measurement_id"])
+	}
+}
+
+func TestAnalyticsGoogleGTMEnsureStepDryRun(t *testing.T) {
+	step, err := newAnalyticsGoogleGTMEnsureStep("gtm", map[string]any{
+		"account":        "accounts/456",
+		"container_name": "example.com",
+		"domains":        []any{"example.com"},
+		"workspace_name": "workflow",
+		"measurement_id": "G-ABC123",
+		"dry_run":        true,
+	})
+	if err != nil {
+		t.Fatalf("new step: %v", err)
+	}
+	res, err := step.Execute(context.Background(), nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if res.Output["dry_run"] != true {
+		t.Fatalf("dry_run output = %#v", res.Output)
+	}
+	if res.Output["public_id"] != "" {
+		t.Fatalf("public_id = %#v", res.Output["public_id"])
 	}
 }
