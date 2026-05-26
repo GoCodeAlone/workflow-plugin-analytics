@@ -37,12 +37,14 @@
 - Modify: `internal/plugin.go`
 - Create: `internal/google_provider.go`
 - Create: `internal/google_provider_test.go`
+- Create: `internal/google_audit.go`
+- Create: `internal/google_audit_test.go`
 - Modify: `plugin.json`
 
 **Steps:**
-1. Write failing tests that `analytics.google_provider` is exposed, registers config by module name, supports env/file/ADC credential inputs, and redacts credential values in validation errors.
+1. Write failing tests that `analytics.google_provider` is exposed, registers config by module name, supports env/file/ADC credential inputs, redacts credential values in validation errors, and appends non-secret JSONL audit events.
 2. Run `GOWORK=off go test ./internal -run 'TestGoogleProvider|TestPluginExposes' -count=1`; expected: FAIL because module type does not exist.
-3. Implement `GoogleProviderConfig`, provider registry, module lifecycle, and plugin `ModuleTypes/CreateModule`.
+3. Implement `GoogleProviderConfig`, provider registry, module lifecycle, audit writer, and plugin `ModuleTypes/CreateModule`.
 4. Run the focused tests; expected: PASS.
 5. Rollback: revert this task commit to remove the module surface and plugin manifest entry.
 
@@ -118,4 +120,5 @@
 3. Run `GOWORK=off go test ./...`; expected: PASS.
 4. Run `GOWORK=off go build ./...`; expected: PASS.
 5. Run CLI smoke: `GOWORK=off go run ./cmd/workflow-plugin-analytics analytics google ga4 ensure --account accounts/123 --property-name example.com --stream-name example.com --default-uri https://example.com --dry-run`; expected JSON includes `"dry_run":true` and `"measurement_id":""`.
-6. Rollback: revert docs/example commit; no live resources touched.
+6. Confirm live apply is still blocked by running the same command without `--dry-run` and no credentials; expected non-zero exit and an error that names missing Google credentials without printing any credential value.
+7. Rollback: revert docs/example commit; no live resources touched.
