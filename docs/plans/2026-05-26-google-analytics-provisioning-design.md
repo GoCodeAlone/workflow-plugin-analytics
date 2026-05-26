@@ -187,3 +187,7 @@ Stop before live Google API mutation. Required operator inputs:
 - Credential secret value or ADC setup.
 - GA account IDs and GTM account IDs for each umbrella.
 - Confirmation that the principal has create/list permissions in those accounts.
+
+## Backport: YAML Primary Surface
+
+2026-05-26: User clarified GA/GTM should be managed from `wfctl`/IaC/infra YAML together with secret management. The design already had Workflow steps, but examples overemphasized CLI. Corrected behavior: `deploy.yaml` or `infra.yaml` owns `analytics.google_provider` plus `pipelines.apply` ensure steps; CLI remains a smoke/operator path. Manifest scope unchanged because Task 5 and Task 6 already cover steps and consumer deployment guidance.

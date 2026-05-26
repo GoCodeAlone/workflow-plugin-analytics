@@ -1,2 +1,51 @@
-# Placeholder minimal config for workflow-plugin-analytics.
 version: 1
+
+secretStores:
+  github-actions:
+    provider: github
+    config:
+      repo: GoCodeAlone/example-site
+      token_env: RELEASES_TOKEN
+
+secrets:
+  defaultStore: github-actions
+  entries:
+    - name: GOOGLE_ANALYTICS_ADMIN_CREDENTIALS_JSON
+      description: Service-account JSON with GA Admin + GTM access.
+
+modules:
+  - name: google-analytics
+    type: analytics.google_provider
+    config:
+      credentials_json: ${GOOGLE_ANALYTICS_ADMIN_CREDENTIALS_JSON}
+      analytics_account: accounts/123456789
+      tag_manager_account: accounts/987654321
+
+pipelines:
+  apply:
+    steps:
+      - name: ensure_ga4
+        type: step.analytics_google_ga4_ensure
+        config:
+          provider: google-analytics
+          property_name: example.com
+          stream_name: example.com
+          default_uri: https://example.com
+          dry_run: true
+
+      - name: ensure_gtm
+        type: step.analytics_google_gtm_ensure
+        config:
+          provider: google-analytics
+          container_name: example.com
+          domains: [example.com, www.example.com]
+          workspace_name: workflow
+          measurement_id: ${ensure_ga4.measurement_id}
+          dry_run: true
+
+      - name: inject_analytics
+        type: step.analytics_inject_html
+        config:
+          provider: google-analytics
+          tag_id: ${ensure_ga4.measurement_id}
+          html_field: html
