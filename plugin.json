@@ -1,6 +1,6 @@
 {
   "name": "workflow-plugin-analytics",
-  "version": "0.1.2",
+  "version": "0.0.0",
   "description": "Analytics and tag-manager injection plus Google provisioning for Workflow apps",
   "author": "GoCodeAlone",
   "license": "MIT",
